@@ -1,5 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mobx/flutter_mobx.dart';
+import 'package:poc_mobx_leonardo/app/screens/login_screen.dart';
+import 'package:poc_mobx_leonardo/app/stores/list_store.dart';
+import 'package:poc_mobx_leonardo/app/stores/login_store.dart';
+import 'package:poc_mobx_leonardo/app/widgets/custom_icon_button.dart';
 import 'package:poc_mobx_leonardo/app/widgets/custom_text_field.dart';
+import 'package:provider/provider.dart';
 
 class ListScreen extends StatefulWidget {
   @override
@@ -7,6 +13,9 @@ class ListScreen extends StatefulWidget {
 }
 
 class _ListScreenState extends State<ListScreen> {
+  final listStore = ListStore();
+  final TextEditingController controller = TextEditingController();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -16,7 +25,9 @@ class _ListScreenState extends State<ListScreen> {
           IconButton(
             icon: Icon(Icons.exit_to_app),
             onPressed: () {
-              Navigator.of(context).pop();
+              Provider.of<LoginStore>(context, listen: false).logout();
+              Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (_) => LoginScreen()));
             },
           )
         ],
@@ -25,26 +36,56 @@ class _ListScreenState extends State<ListScreen> {
         child: Card(
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: CustomTextField(
-                  hint: 'Tarefas',
-                  suffix: IconButton(
-                    icon: Icon(Icons.add),
-                    onPressed: () {},
-                  ),
-                  onChanged: (todo) {},
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                Observer(
+                  builder: (_) {
+                    return CustomTextField(
+                      hint: 'Tarefas',
+                      controller: controller,
+                      onChanged: listStore.setNewTodoTitle,
+                      suffix: listStore.isFormValid
+                          ? CustomIconButton(
+                              radius: 32,
+                              iconData: Icons.add,
+                              onTap: () {
+                                listStore.addTodo();
+                                controller.clear();
+                              },
+                            )
+                          : listStore.setError(),
+                    );
+                  },
                 ),
-              ),
-              ListView.builder(
-                itemCount: 10,
-                itemBuilder: (context, index) => ListTile(
-                  title: Text('Item $index'),
-                ),
-              ),
-            ],
+                const SizedBox(height: 8),
+                Observer(
+                  builder: (_) {
+                    return Expanded(
+                      child: ListView.separated(
+                        itemCount: listStore.todoList.length,
+                        itemBuilder: (_, index) => ListTile(
+                          title: Text(
+                            listStore.todoList[index].title,
+                            style: TextStyle(
+                                decoration: listStore.todoList[index].done
+                                    ? TextDecoration.lineThrough
+                                    : TextDecoration.none,
+                                color: listStore.todoList[index].done
+                                    ? Colors.grey
+                                    : Colors.black87),
+                          ),
+                          onTap: listStore.todoList[index].setToggleDone,
+                        ),
+                        separatorBuilder: (_, index) =>
+                            const Divider(height: 1, color: Colors.black45),
+                      ),
+                    );
+                  },
+                )
+              ],
+            ),
           ),
         ),
       ),

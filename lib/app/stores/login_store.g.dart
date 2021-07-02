@@ -9,6 +9,13 @@ part of 'login_store.dart';
 // ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$LoginStore on _LoginStoreBase, Store {
+  Computed<Function>? _$loginPressedComputed;
+
+  @override
+  Function get loginPressed =>
+      (_$loginPressedComputed ??= Computed<Function>(() => super.loginPressed,
+              name: '_LoginStoreBase.loginPressed'))
+          .value;
   Computed<bool>? _$isPasswordValidComputed;
 
   @override
@@ -76,6 +83,43 @@ mixin _$LoginStore on _LoginStoreBase, Store {
     });
   }
 
+  final _$loggedinAtom = Atom(name: '_LoginStoreBase.loggedin');
+
+  @override
+  bool get loggedin {
+    _$loggedinAtom.reportRead();
+    return super.loggedin;
+  }
+
+  @override
+  set loggedin(bool value) {
+    _$loggedinAtom.reportWrite(value, super.loggedin, () {
+      super.loggedin = value;
+    });
+  }
+
+  final _$loadingAtom = Atom(name: '_LoginStoreBase.loading');
+
+  @override
+  bool get loading {
+    _$loadingAtom.reportRead();
+    return super.loading;
+  }
+
+  @override
+  set loading(bool value) {
+    _$loadingAtom.reportWrite(value, super.loading, () {
+      super.loading = value;
+    });
+  }
+
+  final _$loginAsyncAction = AsyncAction('_LoginStoreBase.login');
+
+  @override
+  Future<void> login() {
+    return _$loginAsyncAction.run(() => super.login());
+  }
+
   final _$_LoginStoreBaseActionController =
       ActionController(name: '_LoginStoreBase');
 
@@ -113,11 +157,36 @@ mixin _$LoginStore on _LoginStoreBase, Store {
   }
 
   @override
+  Widget onError(dynamic e) {
+    final _$actionInfo = _$_LoginStoreBaseActionController.startAction(
+        name: '_LoginStoreBase.onError');
+    try {
+      return super.onError(e);
+    } finally {
+      _$_LoginStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  dynamic init() {
+    final _$actionInfo = _$_LoginStoreBaseActionController.startAction(
+        name: '_LoginStoreBase.init');
+    try {
+      return super.init();
+    } finally {
+      _$_LoginStoreBaseActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
   String toString() {
     return '''
 showPassword: ${showPassword},
 email: ${email},
 password: ${password},
+loggedin: ${loggedin},
+loading: ${loading},
+loginPressed: ${loginPressed},
 isPasswordValid: ${isPasswordValid},
 isEmailValid: ${isEmailValid},
 isFormValid: ${isFormValid}
